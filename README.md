@@ -21,16 +21,16 @@ To install and set up the project:
 
 1. **Clone the repository:**
 
-   \```bash
+   ```bash
    git clone git@github.com:mohammadRrza/AsynchronousServiceCommunication.git
    cd AsynchronousServiceCommunication
-   \```
+   ```
 
 2. **Install dependencies:**
 
-   \```bash
+   ```bash
    pip install -r requirements.txt
-   \```
+   ```
 
 3. **Configuration:**
 
@@ -40,9 +40,9 @@ To install and set up the project:
 
 To run the project:
 
-\```bash
+```bash
 python main.py
-\```
+```
 
 ## Documentation
 
