@@ -48,14 +48,7 @@ python main.py
 
 For detailed documentation, visit the [Project Documentation](https://github.com/mohammadRrza/AsynchronousServiceCommunication/wiki).
 
-## Contributing
-
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to learn how you can contribute to the project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
-For any questions or inquiries, please contact [Mohammad Rrza](mailto:your-email@example.com).
+For any questions or inquiries, please contact [Mohammad Reza](mr.taheri25461@gmail.com).
