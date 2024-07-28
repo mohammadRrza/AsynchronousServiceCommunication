@@ -2,6 +2,9 @@ from flask import Flask, Blueprint, request, jsonify
 from kafka import KafkaProducer
 import json
 import logging
+from uuid import UUID
+import re
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -22,7 +25,7 @@ class KafkaProducerService:
         self.topic = topic
 
     def publish_message(self, key, value):
-        print("salalalalaalal")
+
         # Callback for success
         def on_send_success(record_metadata):
             logger.info(
@@ -39,15 +42,31 @@ class KafkaProducerService:
 
 
 # Endpoint to start session
+# Endpoint to start session
 @main_blueprint.route('/api/start_session', methods=['POST'])
 def start_session():
     data = request.json
-    if not data or 'station_id' not in data or 'driver_token' not in data:
-        return jsonify({"error": "Invalid data"}), 400
+    if not data:
+        return jsonify({"error": "Invalid request format, JSON expected"}), 400
 
     station_id = data.get('station_id')
     driver_token = data.get('driver_token')
 
+    # Validate station_id as UUIDv4
+    try:
+        uuid_obj = UUID(station_id, version=4)
+    except ValueError:
+        return jsonify({"error": "Invalid station_id, must be a valid UUIDv4"}), 400
+
+    # Validate driver_token
+    if not driver_token or not (20 <= len(driver_token) <= 80):
+        return jsonify({"error": "Invalid driver_token, length must be between 20 and 80 characters"}), 400
+
+    allowed_characters = re.compile(r'^[A-Za-z0-9\-._~]+$')
+    if not allowed_characters.match(driver_token):
+        return jsonify({"error": "Invalid driver_token, contains disallowed characters"}), 400
+
+    # Produce message to Kafka
     producer = KafkaProducerService("localhost:9092", "charging_sessions")
     producer.publish_message(key=station_id.encode('utf-8'), value=data)
 
