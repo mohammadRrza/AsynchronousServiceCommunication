@@ -15,14 +15,14 @@
 - Docker
 - Python 3.x (if running locally)
 - Necessary Python packages (listed in `requirements.txt`)
-- Message broker (e.g., RabbitMQ, Kafka)
+- Message broker (Kafka)
 
 ### Installation
 
 #### Using Docker
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/AsynchronousServiceCommunication.git
+    git clone https://github.com/mohammadRrza/AsynchronousServiceCommunication.git
     cd AsynchronousServiceCommunication
     ```
 2. Build the Docker image:
@@ -37,7 +37,7 @@
 #### Running Locally
 1. Clone the repository:
     ```bash
-    git clone https://github.com/your-username/AsynchronousServiceCommunication.git
+    git clone https://github.com/mohammadRrza/AsynchronousServiceCommunication.git
     cd AsynchronousServiceCommunication
     ```
 2. Create a virtual environment and activate it:
