@@ -1,15 +1,17 @@
-# Base image
-FROM python:3.10-slim
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
+# Copy the requirements file into the container at /app
+COPY consumer/requirements.txt ./
+
+# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy the content of the consumer directory into the container
+COPY consumer /app
 
-# Command to run the consumer
+# Define the command to run the consumer script
 CMD ["python", "consumer.py"]

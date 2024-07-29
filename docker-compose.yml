@@ -33,6 +33,18 @@ services:
     networks:
       - kafka-network
 
+  consumer:
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
+    command: python consumer/consumer.py
+    depends_on:
+      - kafka
+    networks:
+      - kafka-network
+    deploy:
+      replicas: 3
+
 networks:
   kafka-network:
     driver: bridge

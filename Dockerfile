@@ -1,18 +1,21 @@
-# Base image
-FROM python:3.10-slim
+FROM python:3.9-slim
 
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
+# Copy the requirements file and install dependencies
+COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy the rest of the application code into the container
+COPY . /app
 
-# Expose port
+# Expose the port Flask runs on
 EXPOSE 5000
 
-# Command to run the application
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:AsynchronousServiceCommunication"]
+# Set the environment variable for Flask
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
+# Run the Flask application
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5860"]

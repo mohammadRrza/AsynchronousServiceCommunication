@@ -13,10 +13,12 @@
 
 ### Prerequisites
 - Docker
+- Docker Compose
 - Python 3.x (if running locally)
 - Necessary Python packages (listed in `requirements.txt`)
 - Message broker (Kafka)
 
+Make sure Docker and Docker Compose are installed on your machine. You can download them from the official [Docker website](https://www.docker.com/get-started).
 ### Installation
 
 #### Using Docker
@@ -27,13 +29,22 @@
     ```
 2. Build the Docker image:
     ```bash
-    docker build -t async-service-communication .
+    docker-compose build
     ```
-3. Run the Docker container:
+3. Start the Services:
     ```bash
-    docker run -d -p 8000:8000 async-service-communication
+    docker-compose up
     ```
 
+4. Stop the Services:
+    ```bash
+    docker-compose down
+    ```
+5. Troubleshooting:
+    ```bash
+    docker-compose logs
+    ```
+   
 #### Running Locally
 1. Clone the repository:
     ```bash
@@ -51,7 +62,7 @@
     ```
 
 ### Configuration
-Configure the message broker and other settings in the `config` directory. Ensure you update the configuration files with the correct settings for your environment.
+Configure the message broker(Kafka) and other settings in the `config` directory. Ensure you update the configuration files with the correct settings for your environment.
 
 ### Usage
 1. Start the service:
