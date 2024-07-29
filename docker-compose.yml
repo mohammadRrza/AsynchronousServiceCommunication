@@ -28,6 +28,8 @@ services:
   flask:
     build:
       context: .
+      dockerfile: Dockerfile
+    command: flask run --host=0.0.0.0
     ports:
       - "5000:5000"
     networks:
@@ -35,7 +37,7 @@ services:
 
   consumer:
     build:
-      context: ./consumer
+      context: .
       dockerfile: Dockerfile
     command: python consumer/consumer.py
     depends_on:

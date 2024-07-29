@@ -1,17 +1,25 @@
-# Use an official Python runtime as a parent image
+# Use a lightweight Python base image
 FROM python:3.9-slim
+COPY . /app
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file into the container at /app
-COPY consumer/requirements.txt ./
-
-# Install any needed packages specified in requirements.txt
+# Copy only the requirements file first to leverage Docker cache
+COPY requirements.txt .
+RUN curl -I https://pypi.org
+RUN pip install flask==3.0.3
 RUN pip install --no-cache-dir -r requirements.txt
+# Copy the rest of the application code into the container
+COPY . .
 
-# Copy the content of the consumer directory into the container
-COPY consumer /app
 
-# Define the command to run the consumer script
-CMD ["python", "consumer.py"]
+# Install Python dependencies
+
+# Copy the rest of the application code into the container
+
+# Ensure permissions for all files
+RUN chmod -R 755 /app
+
+# Set the entry point for the container to run your Python script
+CMD ["python3", "consumer/consumer.py"]
