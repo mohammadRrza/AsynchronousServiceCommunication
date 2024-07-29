@@ -4,7 +4,12 @@ import json
 import logging
 from uuid import UUID
 import re
+from app.config import Config
+from authorization.service import  check_token_validity
 
+kafka_servers = Config.KAFKA_BOOTSTRAP_SERVERS
+kafka_topic = Config.KAFKA_TOPIC
+auth_service_url = Config.AUTHORIZATION_SERVICE_URL
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +30,6 @@ class KafkaProducerService:
         self.topic = topic
 
     def publish_message(self, key, value):
-
         # Callback for success
         def on_send_success(record_metadata):
             logger.info(
@@ -41,7 +45,6 @@ class KafkaProducerService:
         self.producer.flush()
 
 
-# Endpoint to start session
 # Endpoint to start session
 @main_blueprint.route('/api/start_session', methods=['POST'])
 def start_session():
@@ -67,11 +70,18 @@ def start_session():
         return jsonify({"error": "Invalid driver_token, contains disallowed characters"}), 400
 
     # Produce message to Kafka
-    producer = KafkaProducerService("localhost:9092", "charging_sessions")
+    producer = KafkaProducerService(kafka_servers, kafka_topic)
     producer.publish_message(key=station_id.encode('utf-8'), value=data)
 
     return jsonify({"status": "processing"}), 202
 
+
+@main_blueprint.route('/check', methods=['POST'])
+def check():
+    data = request.json
+    driver_token = data.get('driver_token')
+    status = check_token_validity(data, driver_token)
+    return jsonify({"status": status})
 
 # Register blueprint
 app.register_blueprint(main_blueprint)
@@ -79,4 +89,3 @@ app.register_blueprint(main_blueprint)
 # Run the Flask app
 if __name__ == '__main__':
     app.run(debug=True)
-

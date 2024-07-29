@@ -29,7 +29,9 @@ class KafkaConsumerService:
 
                 # Send data to the authentication service
                 response = requests.post(self.auth_service_url, json=data)
+                print("response ====>", response.json())
                 if response.status_code == 200:
+                    self.logger.info(f"Driver Token Status: {response.json()['status']}")
                     self.logger.info("Message processed successfully.")
                 else:
                     self.logger.error(f"Error processing message: {response.text}")
@@ -44,6 +46,6 @@ if __name__ == "__main__":
         servers=['localhost:9092'],
         topic='charging_sessions',
         group_id='auth-group',
-        auth_service_url='http://auth-service:5000/check'
+        auth_service_url='http://127.0.0.1:5000/check'
     )
     consumer.consume_messages()

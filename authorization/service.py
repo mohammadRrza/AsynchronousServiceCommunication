@@ -1,23 +1,29 @@
-from flask import Flask, request, jsonify
-
+from flask import Flask, request, jsonify, Blueprint
+from enum import Enum
 app = Flask(__name__)
+main_blueprint = Blueprint('main', __name__)
 
 
-@app.route('/check', methods=['POST'])
-def check():
-    data = request.json
-    driver_token = data.get('driver_token')
+class Status(Enum):
+    ALLOWED = "allowed"
+    INVALID = "invalid"
+    UNKNOWN = "unknown"
+    NOT_ALLOWED = "not_allowed"
 
-    # Simulate different responses based on the driver_token (simple logic)
+
+def check_token_validity(data, driver_token):
+    # Simulate different responses based on
     if driver_token.startswith("valid"):
-        return jsonify({"status": "allowed"})
+        status = Status.ALLOWED
     elif driver_token.startswith("invalid"):
-        return jsonify({"status": "invalid"})
+        status = Status.INVALID
     elif driver_token.startswith("unknown"):
-        return jsonify({"status": "unknown"})
+        status = Status.UNKNOWN
     else:
-        return jsonify({"status": "not_allowed"})
+        status = Status.NOT_ALLOWED
+
+    return status.value
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
