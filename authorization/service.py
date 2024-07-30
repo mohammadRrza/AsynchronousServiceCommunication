@@ -5,16 +5,16 @@ main_blueprint = Blueprint('main', __name__)
 
 
 class Status(Enum):
-    ALLOWED = "allowed"
-    INVALID = "invalid"
-    UNKNOWN = "unknown"
-    NOT_ALLOWED = "not_allowed"
+    VALID = "valid token"
+    INVALID = "invalid token"
+    UNKNOWN = "unknown token"
+    NOT_ALLOWED = "not_allowed token"
 
 
 def check_token_validity(data, driver_token):
     # Simulate different responses based on
     if driver_token.startswith("valid"):
-        status = Status.ALLOWED
+        status = Status.VALID
     elif driver_token.startswith("invalid"):
         status = Status.INVALID
     elif driver_token.startswith("unknown"):
