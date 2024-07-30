@@ -18,7 +18,6 @@
 
 Certainly! You can add detailed instructions on how to install and run Kafka in the README.md. Here’s a revised version of the Installation section with added Kafka setup instructions:
 
-markdown
 
 # AsynchronousServiceCommunication
 
@@ -93,9 +92,8 @@ markdown
 1. **Update Configuration Files:**
    - Configure Kafka and other settings in the `config` directory.
    - Modify configuration files to include the correct Kafka broker addresses and other necessary parameters.
+   - Configure the message broker(Kafka) and other settings in the `config` directory. Ensure you update the configuration files with the correct settings for your environment.
 
-### Configuration
-Configure the message broker(Kafka) and other settings in the `config` directory. Ensure you update the configuration files with the correct settings for your environment.
 
 ### Usage
 1. Start the service:
