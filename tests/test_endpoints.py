@@ -1,21 +1,69 @@
-import unittest
-from app import create_app
+import pytest
+import json
+from uuid import uuid4
 
 
-class APITestCase(unittest.TestCase):
-    def setUp(self):
-        self.app = create_app()
-        self.client = self.app.test_client()
-        self.app.config['TESTING'] = True
-
-    def test_start_session(self):
-        response = self.client.post('/api/start_session', json={
-            'station_id': '123e4567-e89b-12d3-a456-426614174000',
-            'driver_token': 'validDriverToken12345'
-        })
-        self.assertEqual(response.status_code, 202)
-        self.assertEqual(response.json['status'], 'processing')
+@pytest.fixture
+def client():
+    from app import create_app
+    app = create_app()
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_start_session_invalid_json(client):
+    response = client.post('/api/start_session', data="not a json")
+    assert response.status_code == 400
+    assert response.json == {"error": "Invalid request format, JSON expected"}
+
+
+def test_start_session_invalid_station_id(client):
+    payload = {
+        "station_id": "invalid-uuid",
+        "driver_token": "validDriverToken12345"
+    }
+    response = client.post('/api/start_session', json=payload)
+    assert response.status_code == 400
+    assert response.json == {"error": "Invalid station_id, must be a valid UUIDv4"}
+
+
+def test_start_session_invalid_driver_token_length(client):
+    payload = {
+        "station_id": str(uuid4()),
+        "driver_token": "short"
+    }
+    response = client.post('/api/start_session', json=payload)
+    assert response.status_code == 400
+    assert response.json == {"error": "Invalid driver_token, length must be between 20 and 80 characters"}
+
+
+def test_start_session_invalid_driver_token_characters(client):
+    payload = {
+        "station_id": str(uuid4()),
+        "driver_token": "invalid$character!"
+    }
+    response = client.post('/api/start_session', json=payload)
+    assert response.status_code == 400
+    assert response.json == {"error": "Invalid driver_token, contains disallowed characters"}
+
+
+def test_start_session_success(client, mocker):
+    payload = {
+        "station_id": str(uuid4()),
+        "driver_token": "validDriverToken12345"
+    }
+
+    # Mock KafkaProducerService to prevent actual Kafka interaction
+    mock_producer = mocker.Mock()
+    mocker.patch('app.KafkaProducerService', return_value=mock_producer)
+
+    response = client.post('/api/start_session', json=payload)
+    assert response.status_code == 202
+    assert response.json == {"status": "processing"}
+
+    # Ensure the publish_message method was called with correct parameters
+    mock_producer.publish_message.assert_called_once_with(
+        key=payload['station_id'].encode('utf-8'),
+        value=payload
+    )

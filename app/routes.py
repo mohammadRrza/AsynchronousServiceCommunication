@@ -5,7 +5,7 @@ import logging
 from uuid import UUID
 import re
 from app.config import Config
-from authorization.service import  check_token_validity
+from authorization.service import check_token_validity
 
 kafka_servers = Config.KAFKA_BOOTSTRAP_SERVERS
 kafka_topic = Config.KAFKA_TOPIC
@@ -82,6 +82,7 @@ def check():
     driver_token = data.get('driver_token')
     status = check_token_validity(data, driver_token)
     return jsonify({"status": status})
+
 
 # Register blueprint
 app.register_blueprint(main_blueprint)
