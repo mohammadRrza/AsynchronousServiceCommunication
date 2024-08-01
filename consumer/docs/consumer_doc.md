@@ -36,7 +36,7 @@ This document outlines the implementation and usage of an asynchronous Kafka con
 
 ### Initialization
 
-\`\`\`python
+```python
 class AsyncKafkaConsumerService:
     def __init__(self, servers, topic, group_id, auth_service_url):
         self.servers = servers
@@ -45,25 +45,25 @@ class AsyncKafkaConsumerService:
         self.auth_service_url = auth_service_url
         self.consumer = None
         self.setup_logging()
-\`\`\`
+```
 
 - Initializes the Kafka consumer service with the provided Kafka servers, topic, consumer group ID, and authentication service URL.
 - `setup_logging()` is called to configure logging.
 
 ### Logging Setup
 
-\`\`\`python
+```python
     def setup_logging(self):
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
-\`\`\`
+```
 
 - Configures logging to output messages at the INFO level or higher.
 - Creates a logger instance for the service.
 
 ### Starting the Consumer
 
-\`\`\`python
+```python
     async def start_consumer(self):
         self.consumer = AIOKafkaConsumer(
             self.topic,
@@ -80,7 +80,7 @@ class AsyncKafkaConsumerService:
                 await self.process_message(message.value)
         finally:
             await self.consumer.stop()
-\`\`\`
+```
 
 - Configures the `AIOKafkaConsumer` with the specified topic, servers, group ID, and JSON deserialization.
 - Starts the consumer and logs the start message.
@@ -89,7 +89,7 @@ class AsyncKafkaConsumerService:
 
 ### Processing Messages
 
-\`\`\`python
+```python
     async def process_message(self, data):
         self.logger.info(f"Received message: {data}")
         async with aiohttp.ClientSession() as session:
@@ -105,7 +105,7 @@ class AsyncKafkaConsumerService:
                 self.logger.error(f"Failed to decode JSON response: {e}")
             except aiohttp.ClientError as e:
                 self.logger.error(f"Request failed: {e}")
-\`\`\`
+```
 
 - Logs the received message data.
 - Sends the message data as a JSON payload to the authentication service.
@@ -114,7 +114,7 @@ class AsyncKafkaConsumerService:
 
 ### Main Function
 
-\`\`\`python
+```python
 async def main():
     consumer = AsyncKafkaConsumerService(
         servers=['localhost:9092'],
@@ -123,18 +123,17 @@ async def main():
         auth_service_url='http://127.0.0.1:5000/check'
     )
     await consumer.start_consumer()
-\`\`\`
+```
 
 - Creates an instance of `AsyncKafkaConsumerService` with specified parameters and starts the consumer.
 
-\`\`\`python
+```python
 if __name__ == "__main__":
     asyncio.run(main())
-\`\`\`
+```
 
 - Entry point for running the script, executing the `main()` function in an asyncio event loop.
 
 ## Conclusion
 
 This service provides a robust and efficient way to consume Kafka messages asynchronously, process them, and interact with an external API. It includes error handling and logging for better observability and debugging.
-
