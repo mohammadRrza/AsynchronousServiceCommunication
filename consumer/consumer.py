@@ -46,6 +46,8 @@ class AsyncKafkaConsumerService:
                         self.logger.info("Message processed successfully.")
                     else:
                         self.logger.error(f"Error processing message: {response.status}")
+            except asyncio.TimeoutError:
+                self.logger.error("Request to auth service timed out. Driver token status: unknown.")
             except json.JSONDecodeError as e:
                 self.logger.error(f"Failed to decode JSON response: {e}")
             except aiohttp.ClientError as e:
