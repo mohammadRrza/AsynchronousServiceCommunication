@@ -39,7 +39,7 @@ class AsyncKafkaConsumerService:
         self.logger.info(f"Received message: {data}")
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(self.auth_service_url, json=data) as response:
+                async with session.post(self.auth_service_url, json=data, timeout=10) as response:
                     if response.status == 200:
                         response_data = await response.json()
                         self.logger.info(f"Driver Token Status: {response_data['status']}")
