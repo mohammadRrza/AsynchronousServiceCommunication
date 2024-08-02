@@ -6,6 +6,8 @@ from uuid import UUID
 import re
 from app.config import Config
 from authorization.service import check_token_validity
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 kafka_servers = Config.KAFKA_BOOTSTRAP_SERVERS
 kafka_topic = Config.KAFKA_TOPIC
@@ -18,6 +20,13 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app and blueprint
 app = Flask(__name__)
 main_blueprint = Blueprint('main', __name__)
+
+# Configure rate limiting
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["100 per day", "30 per hour"]
+)
+limiter.init_app(app)
 
 
 # Kafka Producer setup
@@ -46,6 +55,7 @@ class KafkaProducerService:
 
 
 # Endpoint to start session
+@limiter.limit("10 per minute")
 @main_blueprint.route('/api/start_session', methods=['POST'])
 def start_session():
     data = request.json

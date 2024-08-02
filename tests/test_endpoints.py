@@ -1,11 +1,11 @@
 import pytest
 import json
 from uuid import uuid4
+from app import create_app
 
 
 @pytest.fixture
 def client():
-    from app import create_app
     app = create_app()
     app.config['TESTING'] = True
     with app.test_client() as client:
