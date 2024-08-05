@@ -29,7 +29,10 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
         mock_consumer.start = asynctest.CoroutineMock()
         mock_consumer.stop = asynctest.CoroutineMock()
         # Simulate receiving a message from Kafka
-        mock_consumer.__aiter__.return_value = [MagicMock(value=json.dumps({'key': 'value'}).encode('utf-8'))]
+        mock_consumer.__aiter__.return_value = [MagicMock(value=json.dumps({
+                    'station_id': '123e4567-e89b-12d3-a456-426614174000',
+                    'driver_token': 'validDriverToken12345'
+        }).encode('utf-8'))]
 
         with aioresponses() as m:
             # The HTTP POST request Mock test for auth service
@@ -45,7 +48,10 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     @patch('aiokafka.AIOKafkaConsumer')  # The AIOKafkaConsumer Mock Test for checking if message is successful
     async def test_process_message_successful(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP request is successful
-        data = {'key': 'value'}
+        data = {
+             'station_id': '123e4567-e89b-12d3-a456-426614174000',
+             'driver_token': 'validDriverToken12345'
+                }
         message = MagicMock(value=json.dumps(data).encode('utf-8'))
         
         with aioresponses() as m:
@@ -58,8 +64,10 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
     async def test_process_message_timeout(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP request times out
-        data = {'key': 'value'}
-        
+        data = {
+             'station_id': '123e4567-e89b-12d3-a456-426614174000',
+             'driver_token': 'validDriverToken12345'
+                }        
         with aioresponses() as m:
             # Simulate a timeout error for the HTTP request
             m.post(self.auth_service_url, exception=asyncio.TimeoutError)
@@ -70,8 +78,10 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
     async def test_process_message_http_error(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP request returns an error status
-        data = {'key': 'value'}
-        
+        data = {
+             'station_id': '123e4567-e89b-12d3-a456-426614174000',
+             'driver_token': 'validDriverToken12345'
+                }        
         with aioresponses() as m:
             # Mock the HTTP POST request to return a 500 error
             m.post(self.auth_service_url, status=500)
@@ -82,8 +92,10 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
     async def test_process_message_json_decode_error(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP response contains invalid JSON
-        data = {'key': 'value'}
-        
+        data = {
+             'station_id': '123e4567-e89b-12d3-a456-426614174000',
+             'driver_token': 'validDriverToken12345'
+                }        
         with aioresponses() as m:
             # Mock the HTTP POST request to return invalid JSON
             m.post(self.auth_service_url, body='invalid json', status=200)
