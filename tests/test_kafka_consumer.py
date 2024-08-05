@@ -10,7 +10,7 @@ from consumer.consumer import AsyncKafkaConsumerService  # Import the service to
 
 class TestAsyncKafkaConsumerService(asynctest.TestCase):
     def setUp(self):
-        # Setup method to initialize the consumer service before each test
+        # Method for initializing the consumer service
         self.servers = ['localhost:9092']
         self.topic = 'charging_sessions'
         self.group_id = 'auth-group'
@@ -22,7 +22,7 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
             auth_service_url=self.auth_service_url
         )
 
-    @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
+    @patch('aiokafka.AIOKafkaConsumer')  # The AIOKafkaConsumer Mock Test
     async def test_start_consumer(self, MockAIOKafkaConsumer):
         # Mock the behavior of the Kafka consumer
         mock_consumer = MockAIOKafkaConsumer.return_value
@@ -32,7 +32,7 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
         mock_consumer.__aiter__.return_value = [MagicMock(value=json.dumps({'key': 'value'}).encode('utf-8'))]
 
         with aioresponses() as m:
-            # Mock the HTTP POST request to the auth service
+            # The HTTP POST request Mock test for auth service
             m.post(self.auth_service_url, payload={'status': 'active'}, status=200)
 
             # Run the consumer and check its behavior
