@@ -1,68 +1,95 @@
-import asyncio
+import unittest
+from unittest.mock import patch, MagicMock
+import asynctest
+from aioresponses import aioresponses
 from aiokafka import AIOKafkaConsumer
-import aiohttp
 import json
-import logging
+import asyncio
 
+from consumer.consumer import AsyncKafkaConsumerService  # Import the service to be tested
 
-class AsyncKafkaConsumerService:
-    def __init__(self, servers, topic, group_id, auth_service_url):
-        self.servers = servers
-        self.topic = topic
-        self.group_id = group_id
-        self.auth_service_url = auth_service_url
-        self.consumer = None
-        self.setup_logging()
-
-    def setup_logging(self):
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
-
-    async def start_consumer(self):
-        self.consumer = AIOKafkaConsumer(
-            self.topic,
-            bootstrap_servers=self.servers,
+class TestAsyncKafkaConsumerService(asynctest.TestCase):
+    def setUp(self):
+        # Setup method to initialize the consumer service before each test
+        self.servers = ['localhost:9092']
+        self.topic = 'charging_sessions'
+        self.group_id = 'auth-group'
+        self.auth_service_url = 'http://127.0.0.1:5000/check'
+        self.consumer = AsyncKafkaConsumerService(
+            servers=self.servers,
+            topic=self.topic,
             group_id=self.group_id,
-            auto_offset_reset='earliest',
-            value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+            auth_service_url=self.auth_service_url
         )
-        await self.consumer.start()
-        self.logger.info("Starting to consume messages from topic.")
 
-        try:
-            async for message in self.consumer:
-                await self.process_message(message.value)
-        finally:
-            await self.consumer.stop()
+    @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
+    async def test_start_consumer(self, MockAIOKafkaConsumer):
+        # Mock the behavior of the Kafka consumer
+        mock_consumer = MockAIOKafkaConsumer.return_value
+        mock_consumer.start = asynctest.CoroutineMock()
+        mock_consumer.stop = asynctest.CoroutineMock()
+        # Simulate receiving a message from Kafka
+        mock_consumer.__aiter__.return_value = [MagicMock(value=json.dumps({'key': 'value'}).encode('utf-8'))]
 
-    async def process_message(self, data):
-        self.logger.info(f"Received message: {data}")
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(self.auth_service_url, json=data, timeout=10) as response:
-                    if response.status == 200:
-                        response_data = await response.json()
-                        self.logger.info(f"Driver Token Status: {response_data['status']}")
-                        self.logger.info("Message processed successfully.")
-                    else:
-                        self.logger.error(f"Error processing message: {response.status}")
-            except asyncio.TimeoutError:
-                self.logger.error("Request to auth service timed out. Driver token status: unknown.")
-            except json.JSONDecodeError as e:
-                self.logger.error(f"Failed to decode JSON response: {e}")
-            except aiohttp.ClientError as e:
-                self.logger.error(f"Request failed: {e}")
+        with aioresponses() as m:
+            # Mock the HTTP POST request to the auth service
+            m.post(self.auth_service_url, payload={'status': 'active'}, status=200)
 
+            # Run the consumer and check its behavior
+            await self.consumer.start_consumer()
 
-async def main():
-    consumer = AsyncKafkaConsumerService(
-        servers=['localhost:9092'],
-        topic='charging_sessions',
-        group_id='auth-group',
-        auth_service_url='http://127.0.0.1:5000/check'
-    )
-    await consumer.start_consumer()
+        # Ensure that the consumer's start and stop methods were called once
+        mock_consumer.start.assert_called_once()
+        mock_consumer.stop.assert_called_once()
 
+    @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
+    async def test_process_message_successful(self, MockAIOKafkaConsumer):
+        # Test the process_message method when HTTP request is successful
+        data = {'key': 'value'}
+        message = MagicMock(value=json.dumps(data).encode('utf-8'))
+        
+        with aioresponses() as m:
+            # Mock the HTTP POST request to the auth service
+            m.post(self.auth_service_url, payload={'status': 'active'}, status=200)
+
+            # Call process_message and check its behavior
+            await self.consumer.process_message(data)
+
+    @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
+    async def test_process_message_timeout(self, MockAIOKafkaConsumer):
+        # Test the process_message method when HTTP request times out
+        data = {'key': 'value'}
+        
+        with aioresponses() as m:
+            # Simulate a timeout error for the HTTP request
+            m.post(self.auth_service_url, exception=asyncio.TimeoutError)
+
+            # Call process_message and check its behavior
+            await self.consumer.process_message(data)
+
+    @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
+    async def test_process_message_http_error(self, MockAIOKafkaConsumer):
+        # Test the process_message method when HTTP request returns an error status
+        data = {'key': 'value'}
+        
+        with aioresponses() as m:
+            # Mock the HTTP POST request to return a 500 error
+            m.post(self.auth_service_url, status=500)
+
+            # Call process_message and check its behavior
+            await self.consumer.process_message(data)
+
+    @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
+    async def test_process_message_json_decode_error(self, MockAIOKafkaConsumer):
+        # Test the process_message method when HTTP response contains invalid JSON
+        data = {'key': 'value'}
+        
+        with aioresponses() as m:
+            # Mock the HTTP POST request to return invalid JSON
+            m.post(self.auth_service_url, body='invalid json', status=200)
+
+            # Call process_message and check its behavior
+            await self.consumer.process_message(data)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    unittest.main()
