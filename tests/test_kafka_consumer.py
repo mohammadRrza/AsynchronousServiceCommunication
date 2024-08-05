@@ -22,7 +22,7 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
             auth_service_url=self.auth_service_url
         )
 
-    @patch('aiokafka.AIOKafkaConsumer')  # The AIOKafkaConsumer Mock Test
+    @patch('aiokafka.AIOKafkaConsumer')  # The AIOKafkaConsumer Mock Test for start process
     async def test_start_consumer(self, MockAIOKafkaConsumer):
         # Mock the behavior of the Kafka consumer
         mock_consumer = MockAIOKafkaConsumer.return_value
@@ -35,14 +35,14 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
             # The HTTP POST request Mock test for auth service
             m.post(self.auth_service_url, payload={'status': 'active'}, status=200)
 
-            # Run the consumer and check its behavior
+            # Running the consumer and checking its behavior
             await self.consumer.start_consumer()
 
         # Ensure that the consumer's start and stop methods were called once
         mock_consumer.start.assert_called_once()
         mock_consumer.stop.assert_called_once()
 
-    @patch('aiokafka.AIOKafkaConsumer')  # Mock the AIOKafkaConsumer
+    @patch('aiokafka.AIOKafkaConsumer')  # The AIOKafkaConsumer Mock Test for checking if message is successful
     async def test_process_message_successful(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP request is successful
         data = {'key': 'value'}
