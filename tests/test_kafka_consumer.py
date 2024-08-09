@@ -5,8 +5,15 @@ from aioresponses import aioresponses
 from aiokafka import AIOKafkaConsumer
 import json
 import asyncio
+import sys
+import os
 
+# Get the absolute path of the project's root directory
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Add the project's root directory to Python's PATH
+sys.path.insert(0, project_root)
 from consumer.consumer import AsyncKafkaConsumerService  # Import the service to be tested
+
 
 class TestAsyncKafkaConsumerService(asynctest.TestCase):
     def setUp(self):
@@ -30,8 +37,8 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
         mock_consumer.stop = asynctest.CoroutineMock()
         # Simulate receiving a message from Kafka
         mock_consumer.__aiter__.return_value = [MagicMock(value=json.dumps({
-                    'station_id': '123e4567-e89b-12d3-a456-426614174000',
-                    'driver_token': 'validDriverToken12345'
+            'station_id': '123e4567-e89b-12d3-a456-426614174000',
+            'driver_token': 'validDriverToken12345'
         }).encode('utf-8'))]
 
         with aioresponses() as m:
@@ -49,11 +56,11 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     async def test_process_message_successful(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP request is successful
         data = {
-             'station_id': '123e4567-e89b-12d3-a456-426614174000',
-             'driver_token': 'validDriverToken12345'
-                }
+            'station_id': '123e4567-e89b-12d3-a456-426614174000',
+            'driver_token': 'validDriverToken12345'
+        }
         message = MagicMock(value=json.dumps(data).encode('utf-8'))
-        
+
         with aioresponses() as m:
             # Mock the HTTP POST request to the auth service
             m.post(self.auth_service_url, payload={'status': 'active'}, status=200)
@@ -65,9 +72,9 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     async def test_process_message_timeout(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP request times out
         data = {
-             'station_id': '123e4567-e89b-12d3-a456-426614174000',
-             'driver_token': 'validDriverToken12345'
-                }        
+            'station_id': '123e4567-e89b-12d3-a456-426614174000',
+            'driver_token': 'validDriverToken12345'
+        }
         with aioresponses() as m:
             # Simulate a timeout error for the HTTP request
             m.post(self.auth_service_url, exception=asyncio.TimeoutError)
@@ -79,9 +86,9 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     async def test_process_message_http_error(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP request returns an error status
         data = {
-             'station_id': '123e4567-e89b-12d3-a456-426614174000',
-             'driver_token': 'validDriverToken12345'
-                }        
+            'station_id': '123e4567-e89b-12d3-a456-426614174000',
+            'driver_token': 'validDriverToken12345'
+        }
         with aioresponses() as m:
             # Mock the HTTP POST request to return a 500 error
             m.post(self.auth_service_url, status=500)
@@ -93,15 +100,16 @@ class TestAsyncKafkaConsumerService(asynctest.TestCase):
     async def test_process_message_json_decode_error(self, MockAIOKafkaConsumer):
         # Test the process_message method when HTTP response contains invalid JSON
         data = {
-             'station_id': '123e4567-e89b-12d3-a456-426614174000',
-             'driver_token': 'validDriverToken12345'
-                }        
+            'station_id': '123e4567-e89b-12d3-a456-426614174000',
+            'driver_token': 'validDriverToken12345'
+        }
         with aioresponses() as m:
             # Mock the HTTP POST request to return invalid JSON
             m.post(self.auth_service_url, body='invalid json', status=200)
 
             # Call process_message and check its behavior
             await self.consumer.process_message(data)
+
 
 if __name__ == "__main__":
     unittest.main()

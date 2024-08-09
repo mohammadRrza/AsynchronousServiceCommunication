@@ -1,6 +1,15 @@
+import os
+import sys
+
 import pytest
 import json
 from uuid import uuid4
+
+# Get the absolute path of the project's root directory
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+# Add the project's root directory to Python's PATH
+sys.path.insert(0, project_root)
+
 from app import create_app
 
 
