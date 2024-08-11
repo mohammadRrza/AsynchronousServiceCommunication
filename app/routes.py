@@ -58,6 +58,8 @@ class KafkaProducerService:
 @limiter.limit("10 per minute")
 @main_blueprint.route('/api/start_session', methods=['POST'])
 def start_session():
+    if not request.is_json:
+        return jsonify({"error": "Invalid request format, JSON expected"}), 415
     data = request.json
     if not data:
         return jsonify({"error": "Invalid request format, JSON expected"}), 400
